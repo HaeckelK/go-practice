@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"strings"
-	"fmt"
 )
 
 type shape interface {
