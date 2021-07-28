@@ -9,6 +9,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -28,28 +30,25 @@ type TimeDelayFetcher struct {
 
 func (q TimeDelayFetcher) Fetch(code string) (quote Quote, err error) {
 	time.Sleep(time.Duration(q.delay) * time.Second)
+	quote = Quote{code: code, value: 999}
 	return
 }
 
 func getTargetCodes() []string {
-	return []string{"AMC", "AAPL"}
+	var codes []string
+	for _, raw := range os.Args[1:] {
+		codes = append(codes, strings.ToUpper(raw))
+	}
+	return codes
 }
 
+// TODO this was only here to eyeball the concurrency was working
 func getQuote(fetcher Fetcher, code string) (quote Quote, err error) {
 	fmt.Println(code, "start")
 	quote, err = fetcher.Fetch(code)
 	fmt.Println(code, "end")
 	return
 }
-
-// No concurrency
-// func getQuotes(fetcher Fetcher, codes []string) (quotes []*Quote) {
-// 	for _, code := range codes {
-// 		quote, _ := getQuote(fetcher, code)
-// 		quotes = append(quotes, &quote)
-// 	}
-// 	return
-// }
 
 func getQuotes(fetcher Fetcher, codes []string) (quotes []*Quote) {
 	var wg sync.WaitGroup
@@ -69,15 +68,17 @@ func main() {
 	// TODO UI for quote codes
 	// TODO frequency
 	// TODO colour in terminal
+	// TODO history of quotes
 	fmt.Println("Stock Quote Fetcher")
-	fetcher := TimeDelayFetcher{delay: 2}
+	fetcher := TimeDelayFetcher{delay: 0}
 	codes := getTargetCodes()
 	fmt.Println("Codes Provided:")
 	fmt.Println(codes)
 
 	fmt.Println("Fetching Quotes")
 	quotes := getQuotes(fetcher, codes)
-	fmt.Println(quotes)
-	time.Sleep(60 * time.Second)
+	for _, quote := range quotes {
+		fmt.Println(*quote)
+	}
 
 }
