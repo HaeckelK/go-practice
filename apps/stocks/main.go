@@ -16,8 +16,28 @@ import (
 )
 
 type Quote struct {
-	code  string
-	value int
+	code     string
+	value    int
+	movement int
+}
+
+type QuoteStore struct {
+	quotes map[string][]*Quote
+}
+
+func (s *QuoteStore) AddQuote(q *Quote) {
+	quotes := s.quotes[q.code]
+	if len(quotes) > 0 {
+		prior := quotes[len(quotes)-1]
+		q.movement = q.value - prior.value
+	}
+	s.quotes[q.code] = append(s.quotes[q.code], q)
+}
+
+func NewQuoteStore() *QuoteStore {
+	store := new(QuoteStore)
+	store.quotes = make(map[string][]*Quote)
+	return store
 }
 
 type Fetcher interface {
@@ -77,8 +97,10 @@ func main() {
 
 	fmt.Println("Fetching Quotes")
 	quotes := getQuotes(fetcher, codes)
+
 	for _, quote := range quotes {
 		fmt.Println(*quote)
 	}
+	// Add to quote store
 
 }
