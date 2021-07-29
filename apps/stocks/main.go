@@ -27,6 +27,7 @@ type QuoteStore struct {
 
 func (s *QuoteStore) AddQuote(q *Quote) {
 	quotes := s.quotes[q.code]
+	// If prior quote for this code exists then use value to calculate movement
 	if len(quotes) > 0 {
 		prior := quotes[len(quotes)-1]
 		q.movement = q.value - prior.value
@@ -85,10 +86,8 @@ func getQuotes(fetcher Fetcher, codes []string) (quotes []*Quote) {
 }
 
 func main() {
-	// TODO UI for quote codes
 	// TODO frequency
 	// TODO colour in terminal
-	// TODO history of quotes
 	fmt.Println("Stock Quote Fetcher")
 	fetcher := TimeDelayFetcher{delay: 0}
 	codes := getTargetCodes()
