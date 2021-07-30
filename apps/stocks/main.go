@@ -9,6 +9,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 	"sync"
@@ -35,6 +36,14 @@ func (s *QuoteStore) AddQuote(q *Quote) {
 	s.quotes[q.code] = append(s.quotes[q.code], q)
 }
 
+func (s *QuoteStore) AddQuotes(quotes []*Quote) {
+	for _, quote := range quotes {
+		s.AddQuote(quote)
+		// TODO remove print
+		fmt.Println(*quote)
+	}
+}
+
 func NewQuoteStore() *QuoteStore {
 	store := new(QuoteStore)
 	store.quotes = make(map[string][]*Quote)
@@ -51,7 +60,7 @@ type TimeDelayFetcher struct {
 
 func (q TimeDelayFetcher) Fetch(code string) (quote Quote, err error) {
 	time.Sleep(time.Duration(q.delay) * time.Second)
-	quote = Quote{code: code, value: 999}
+	quote = Quote{code: code, value: rand.Intn(100)}
 	return
 }
 
@@ -91,15 +100,16 @@ func main() {
 	fmt.Println("Stock Quote Fetcher")
 	fetcher := TimeDelayFetcher{delay: 0}
 	codes := getTargetCodes()
+	store := NewQuoteStore()
+
 	fmt.Println("Codes Provided:")
 	fmt.Println(codes)
 
 	fmt.Println("Fetching Quotes")
 	quotes := getQuotes(fetcher, codes)
+	store.AddQuotes(quotes)
 
-	for _, quote := range quotes {
-		fmt.Println(*quote)
-	}
-	// Add to quote store
+	quotes = getQuotes(fetcher, codes)
+	store.AddQuotes(quotes)
 
 }
